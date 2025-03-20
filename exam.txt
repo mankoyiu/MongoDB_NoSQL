@@ -1,0 +1,182 @@
+1
+Design a MongoDB NoSQL schema for a blogging platform. The platform should include collections for users, posts, and comments. Consider the relationship between these entities and include fields such as user profiles, post titles, content, post date, and comments.
+
+Users Collection
+{
+  "_id": ObjectId("..."), // Unique user ID
+  "username": "john_doe", // Unique username
+  "email": "john@example.com", // User email
+  "password": "hashed_password", // Hashed password
+  "profile": {
+    "full_name": "John Doe",
+    "bio": "A passionate blogger.",
+    "profile_picture": "url_to_image"
+  },
+  "created_at": ISODate("2023-10-01T12:00:00Z") // Account creation date
+}
+
+Posts Collection
+{
+  "_id": ObjectId("..."), // Unique post ID
+  "user_id": ObjectId("..."), // Reference to the user who created the post
+  "title": "Introduction to MongoDB", // Post title
+  "content": "MongoDB is a NoSQL database...", // Post content
+  "created_at": ISODate("2023-10-02T10:00:00Z"), // Post creation date
+  "tags": ["mongodb", "nosql", "database"], // Tags for categorization
+  "comments": [
+    {
+      "comment_id": ObjectId("..."), // Unique comment ID
+      "user_id": ObjectId("..."), // Reference to the user who commented
+      "content": "Great post!", // Comment content
+      "created_at": ISODate("2023-10-02T11:00:00Z") // Comment creation date
+    }
+  ]
+}
+
+Comments Collection
+{
+  "_id": ObjectId("..."), // Unique comment ID
+  "post_id": ObjectId("..."), // Reference to the post
+  "user_id": ObjectId("..."), // Reference to the user who commented
+  "content": "Great post!", // Comment content
+  "created_at": ISODate("2023-10-02T11:00:00Z") // Comment creation date
+}
+
+2
+
+Given the following sample document from a products collection:
+{
+	"_id": {"$oid" : "627015bffc13ae18ee4cd712"},
+	"name" : "Laptop",
+	"brand" : "TechBrand",
+	"price" : 1200,
+	"stock" : 10
+}
+
+
+Q1: Write a MongoBD query to insert a new document into the products collection for a new product named "Smartphone", brand "PhoneBrand", priced at 800, with a stock 25.
+
+db.products.insertOne({
+  name: "Smartphone",
+  brand: "PhoneBrand",
+  price: 800,
+  stock: 25
+});
+
+Q2. Write a MongoDB query to update the stock of the "Laptop" by decreasing it by 2.
+
+db.products.updateOne(
+  { name: "Laptop" },
+  { $inc: { stock: -2 } }
+);
+
+
+
+Q3. Write a MongoDB query to find all products priced over 1000.
+db.products.find({ price: { $gt: 1000 } });
+
+Q4. Write a MongoDB query to delete a product by its _id.
+db.products.deleteOne({ _id: ObjectId("627015bffc13ae18ee4cd712") });
+
+
+Q5. Given a user's collection with documents containing _id, name, and email, write a query to add a new field signup_date with the current date to all documents.
+
+db.users.updateMany(
+  {},
+  { $set: { signup_date: new Date() } }
+);
+
+
+Following the products collection,consider a sales collection with documents structured as follows:
+
+{
+	"_id" : {"$old": "637013ccfc13ae19dd4cd712"},
+	"product_id" : "637013ccfc13ae19dd4cd712",
+	"quantity" : 3,
+	"sale_date" : {"$date" : "2023-03-30T22:30:42.000Z"}
+}
+
+Q6. Write an aggregation pipeline to calculate each product's total sales (sum of quantity).
+db.sales.aggregate([
+  {
+    $group: {
+      _id: "$product_id",
+      total_sales: { $sum: "$quantity" }
+    }
+  }
+]);
+
+Q7. Write an aggregation pipeline to find the product with the highest sales.
+db.sales.aggregate([
+  {
+    $group: {
+      _id: "$product_id",
+      total_sales: { $sum: "$quantity" }
+    }
+  },
+  {
+    $sort: { total_sales: -1 }
+  },
+  {
+    $limit: 1
+  }
+]);
+
+
+Q8. Extend the pipeline from Question 7 to include the average sale quantity per product.
+db.sales.aggregate([
+  {
+    $group: {
+      _id: "$product_id",
+      total_sales: { $sum: "$quantity" },
+      average_quantity: { $avg: "$quantity" }
+    }
+  }
+]);
+
+
+
+Q9.
+Explain the important of indexing in MongoDB and how it can affect the query performance. Provide an example of creating an index on the brand field in the products collection below.
+
+{
+	"_id": {"$oid" : "627015bffc13ae18ee4cd712"},
+	"name" : "Laptop",
+	"brand" : "TechBrand",
+	"price" : 1200,
+	"stock" : 10
+}
+
+
+Indexing improves query performance by allowing MongoDB to quickly locate documents without scanning the entire collection. Without indexes, MongoDB performs a full collection scan, which is inefficient for large datasets.
+
+Example: Create an index on the brand field in the products collection:
+db.products.createIndex({ brand: 1 });
+
+
+Q10. Describe how you would identify and optimize a slow-running query in MongoDB. Include the steps you would take to analyse and improve the query's performance.
+
+Identify Slow Queries:
+
+Use db.collection.find().explain("executionStats") to analyze query performance.
+
+Check the MongoDB profiler (db.setProfilingLevel(1)) to log slow queries.
+
+Analyze Execution Stats:
+
+Look at executionStats.totalDocsExamined and executionStats.executionTimeMillis to identify bottlenecks.
+
+Optimize Queries:
+
+Add indexes on frequently queried fields.
+
+Use covered queries to avoid fetching documents.
+
+Restructure queries to reduce the number of documents scanned.
+
+Test and Monitor:
+
+Re-run the query after optimization and compare execution stats.
+
+Continuously monitor query performance using tools like MongoDB Atlas or mongostat.
+
