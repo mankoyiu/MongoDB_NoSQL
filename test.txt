@@ -1,0 +1,166 @@
+There is a "test" collection in MongoDB with the following dataset as a sample:
+
+_id
+65a77a9bfc13ae79abfa28ed
+studentId
+"14-312-2154"
+studentName
+"Agretha Hallad"
+age
+18
+enrollmentDate
+2023-05-21T01:19:08.000+00:00
+
+subjects
+Array (8)
+
+0
+Object
+subjectName
+"Arts"
+marks
+50.09
+
+1
+Object
+subjectName
+"Maths"
+marks
+72.3
+
+2
+Object
+subjectName
+"Music"
+marks
+62.65
+
+3
+Object
+subjectName
+"Hypnaceae"
+marks
+42.34
+
+4
+Object
+subjectName
+"Chinese Language"
+marks
+61.03
+
+5
+Object
+subjectName
+"Chinese Culture"
+marks
+66.33
+
+6
+Object
+subjectName
+"Poor American Culture"
+marks
+57.77
+
+7
+Object
+subjectName
+"English Language"
+marks
+79.68
+
+address
+Object
+street
+"72153 Ludington Place"
+city
+"Los Pinos"
+
+
+Q1. Create a new document in the "test" collection with the following details: name "Alex Smith", age 21, and a subjects array containing "Maths" and "Physics". Please randomise a mark for each subject based on the existing schema
+
+use test
+
+db.test.insertOne({
+  studentName: "Alex Smith",
+  age: 21,
+  subjects: [
+    {
+      subjectName: "Maths",
+      marks: Math.random() * 100
+    },
+    {
+      subjectName: "Physics",
+      marks: Math.random() * 100
+    }
+  ]
+})
+
+Q2.
+Write a query to find all documents in the test collection where the age is greater than 18.
+
+db.test.find({ age: { $gt: 18 } })
+
+Q3.
+Update all documents in the test collection by adding a new field, enrollmentStatus, with the value active.
+
+db.test.updateMany({}, { $set: { enrollmentStatus: "active" } })
+
+
+Q4.
+Write a query to find the students with the name containing "on".
+
+
+db.test.find({ studentName: { $regex: "on", $options: "i" } })
+
+Q5.
+List all the students with the student ID, name and nickname who do not have both contact phone and email address. Ascending ordered by studenId.
+
+
+db.test.find({
+  $or: [
+    { contactphone: { $exists: false } },
+    { email: { $exists: false } }
+  ]
+},
+{
+  studentId: 1,
+  studentName: 1,
+  studentNickName: 1
+}).sort({ studentId: 1 })
+
+
+Q6.
+Write a query to select all students who are taking "Maths" as one of their subjects and project only the name and subjects fields (i.e. no Object ID).
+
+db.test.find(
+  { "subjects.subjectName": "Maths" },
+  { _id: 0, studentName: 1, subjects: 1 }
+)
+
+Q7.
+
+Write a query to update the name of a student from "Alexandr Cradock" to "Alexander Smith".
+
+db.test.updateOne(
+  { studentName: "Alexandr Cradock" },
+  { $set: { studentName: "Alexander Smith" } }
+)
+
+Q8.
+
+Find and remove a subject "History" from all students' subject arrays.
+
+db.test.updateMany(
+  { "subjects.subjectName": "History" },
+  { $pull: { subjects: { subjectName: "History" } } }
+)
+
+Q9.
+
+Write a query to find students with more than 3 subjects and sort the results by name in ascending order.
+
+db.test.find(
+  { $expr: { $gt: [{ $size: "$subjects" }, 3] } }
+).sort({ studentName: 1 })
